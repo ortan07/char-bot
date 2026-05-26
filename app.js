@@ -2,6 +2,7 @@ const GEMINI_API_KEY = "";
 const GEMINI_MODEL = "gemini-2.0-flash";
 const COMMENT_KEY = "meowide-comments";
 const RECENT_KEY = "meowide-recent-chats";
+const CUSTOM_BOTS_KEY = "meowide-custom-bots";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -14,6 +15,7 @@ const state = {
   currentBot: null,
   comments: readStore(COMMENT_KEY, {}),
   recent: readStore(RECENT_KEY, []),
+  customBots: readStore(CUSTOM_BOTS_KEY, []),
   chat: [],
   geminiMessages: [],
 };
@@ -52,13 +54,21 @@ function formatCount(count = 0) {
   return Number(count).toLocaleString("th-TH");
 }
 
+function getAllBots() {
+  return [...BOTS, ...state.customBots];
+}
+
+function findBot(id) {
+  return getAllBots().find((bot) => bot.id === id);
+}
+
 function allTags() {
-  return ["ทั้งหมด", ...new Set(BOTS.flatMap((bot) => bot.tags || []))];
+  return ["ทั้งหมด", ...new Set(getAllBots().flatMap((bot) => bot.tags || []))];
 }
 
 function filteredBots() {
   const query = state.search.trim().toLowerCase();
-  let bots = BOTS.filter((bot) => {
+  let bots = getAllBots().filter((bot) => {
     const tagOk = state.tag === "ทั้งหมด" || (bot.tags || []).includes(state.tag);
     const text = [bot.name, bot.role, bot.desc, ...(bot.tags || [])].join(" ").toLowerCase();
     return tagOk && (!query || text.includes(query));
@@ -118,11 +128,13 @@ function renderCards() {
   $("#botGrid").innerHTML = bots.length
     ? bots
       .map((bot, index) => `
-        <article class="bot-card" style="--card-i:${index}; --accent:${esc(bot.color)}; --accent-soft:${esc(bot.colorSoft)}" data-id="${esc(bot.id)}">
+        <article class="bot-card ${bot.isCustom ? "is-custom" : ""}" style="--card-i:${index}; --accent:${esc(bot.color)}; --accent-soft:${esc(bot.colorSoft)}" data-id="${esc(bot.id)}">
+          ${bot.isCustom ? `<button class="delete-bot" type="button" data-delete-bot="${esc(bot.id)}" aria-label="ลบ ${esc(bot.name)}">×</button>` : ""}
           <button class="bot-card-button" type="button" aria-label="เปิดรายละเอียด ${esc(bot.name)}">
             <div class="card-art">
               ${cardImage(bot)}
               <span class="msg-pill">คุย ${formatCount(bot.msgs)} ครั้ง</span>
+              ${bot.isCustom ? `<span class="custom-pill">Custom</span>` : ""}
             </div>
             <div class="card-body">
               <div class="tag-row">
@@ -176,7 +188,7 @@ function renderRecentChats() {
   list.innerHTML = state.recent.length
     ? state.recent
       .map((item) => {
-        const bot = BOTS.find((entry) => entry.id === item.id);
+        const bot = findBot(item.id);
         if (!bot) return "";
         return `
           <button class="recent-item" type="button" data-id="${esc(bot.id)}">
@@ -197,7 +209,7 @@ function renderChatsView() {
   list.innerHTML = state.recent.length
     ? state.recent
       .map((item) => {
-        const bot = BOTS.find((entry) => entry.id === item.id);
+        const bot = findBot(item.id);
         if (!bot) return "";
         return `
           <button class="thread-card" type="button" data-id="${esc(bot.id)}">
@@ -216,7 +228,8 @@ function renderChatsView() {
 
 function renderProfileView() {
   $("#profileStats").innerHTML = `
-    <div class="stat-card"><strong>${formatCount(BOTS.length)}</strong><span>ตัวละคร</span></div>
+    <div class="stat-card"><strong>${formatCount(getAllBots().length)}</strong><span>ตัวละคร</span></div>
+    <div class="stat-card"><strong>${formatCount(state.customBots.length)}</strong><span>Custom bots</span></div>
     <div class="stat-card"><strong>${formatCount(state.recent.length)}</strong><span>แชทล่าสุด</span></div>
     <div class="stat-card"><strong>${formatCount(Object.values(state.comments).flat().length)}</strong><span>คอมเมนต์</span></div>
   `;
@@ -408,6 +421,86 @@ function saveComment() {
   renderProfileView();
 }
 
+function hexToSoft(hex) {
+  const clean = String(hex || "#ff4bb8").replace("#", "");
+  const value = clean.length === 3
+    ? clean.split("").map((char) => char + char).join("")
+    : clean.padEnd(6, "b").slice(0, 6);
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},0.16)`;
+}
+
+function splitTags(value) {
+  return String(value || "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+}
+
+function createCustomBot(form) {
+  const data = new FormData(form);
+  const name = String(data.get("name") || "").trim();
+  const role = String(data.get("role") || "").trim();
+  const desc = String(data.get("desc") || "").trim();
+  if (!name || !role || !desc) return;
+
+  const color = String(data.get("color") || "#ff4bb8");
+  const img = String(data.get("img") || "").trim();
+  const tags = splitTags(data.get("tags"));
+  const bot = {
+    id: `custom-${Date.now()}`,
+    name,
+    role,
+    color,
+    colorSoft: hexToSoft(color),
+    hasImg: Boolean(img),
+    img,
+    emoji: String(data.get("emoji") || name.slice(0, 1) || "M").trim(),
+    tags: tags.length ? tags : ["Custom"],
+    desc,
+    likes: "สร้างโดยผู้ใช้",
+    dislikes: "-",
+    msgs: 0,
+    greet: String(data.get("greet") || `สวัสดี เราคือ ${name}`).trim(),
+    system: String(data.get("system") || `คุณคือ ${name}. บทบาท: ${role}. บุคลิกและข้อมูล: ${desc}. ตอบเป็นภาษาไทยและรักษาคาแรกเตอร์เสมอ`).trim(),
+    isCustom: true,
+  };
+
+  state.customBots = [bot, ...state.customBots];
+  saveStore(CUSTOM_BOTS_KEY, state.customBots);
+  form.reset();
+  form.elements.color.value = color;
+  state.tag = "ทั้งหมด";
+  state.search = "";
+  $("#searchInput").value = "";
+  renderFilters();
+  renderCards();
+  renderProfileView();
+  setView("explore");
+}
+
+function deleteCustomBot(id) {
+  const bot = state.customBots.find((entry) => entry.id === id);
+  if (!bot) return;
+  const ok = confirm(`ลบ ${bot.name} ออกจาก Custom bots?`);
+  if (!ok) return;
+
+  state.customBots = state.customBots.filter((entry) => entry.id !== id);
+  state.recent = state.recent.filter((entry) => entry.id !== id);
+  delete state.comments[id];
+  saveStore(CUSTOM_BOTS_KEY, state.customBots);
+  saveStore(RECENT_KEY, state.recent);
+  saveStore(COMMENT_KEY, state.comments);
+  renderFilters();
+  renderCards();
+  renderRecentChats();
+  renderChatsView();
+  renderProfileView();
+}
+
 function bindEvents() {
   $("#searchInput").addEventListener("input", (event) => {
     state.search = event.target.value;
@@ -431,9 +524,16 @@ function bindEvents() {
   });
 
   $("#botGrid").addEventListener("click", (event) => {
+    const deleteButton = event.target.closest("[data-delete-bot]");
+    if (deleteButton) {
+      event.stopPropagation();
+      deleteCustomBot(deleteButton.dataset.deleteBot);
+      return;
+    }
+
     const card = event.target.closest(".bot-card");
     if (!card) return;
-    const bot = BOTS.find((entry) => entry.id === card.dataset.id);
+    const bot = findBot(card.dataset.id);
     if (!bot) return;
     card.classList.add("is-opening");
     setTimeout(() => openModal(bot), 170);
@@ -444,7 +544,7 @@ function bindEvents() {
     if (event.target.matches("[data-close-modal]") || event.target.id === "botModal") closeModal();
     const start = event.target.closest("[data-start-chat]");
     if (start) {
-      const bot = BOTS.find((entry) => entry.id === start.dataset.startChat);
+      const bot = findBot(start.dataset.startChat);
       if (bot) startChat(bot);
     }
   });
@@ -456,14 +556,19 @@ function bindEvents() {
 
   $("#recentChats").addEventListener("click", (event) => {
     const button = event.target.closest("[data-id]");
-    const bot = BOTS.find((entry) => entry.id === button?.dataset.id);
+    const bot = findBot(button?.dataset.id);
     if (bot) startChat(bot);
   });
 
   $("#chatThreads").addEventListener("click", (event) => {
     const button = event.target.closest("[data-id]");
-    const bot = BOTS.find((entry) => entry.id === button?.dataset.id);
+    const bot = findBot(button?.dataset.id);
     if (bot) startChat(bot);
+  });
+
+  $("#creatorForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    createCustomBot(event.currentTarget);
   });
 
   $("#backBtn").addEventListener("click", closeChat);

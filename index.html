@@ -69,16 +69,64 @@
           <h2>Create Character</h2>
         </header>
         <div class="creator-panel">
-          <div>
-            <h3>สร้างตัวละครใหม่</h3>
-            <p>เพิ่มข้อมูลใน <code>bots.js</code> ด้วยโครงสร้างเดิม แล้วระบบจะดึงแท็กและการ์ดขึ้นมาอัตโนมัติ</p>
-          </div>
-          <pre>{
-  id, name, role, color, colorSoft,
-  hasImg, img, emoji,
-  tags, desc, likes, dislikes,
-  msgs, greet, system
-}</pre>
+          <form class="creator-form" id="creatorForm">
+            <div class="form-head">
+              <h3>สร้างตัวละครใหม่</h3>
+              <p>บอทที่สร้างเองจะถูกบันทึกใน browser นี้ และแสดงในหน้า Explore เหมือนบอทหลัก</p>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                <span>ชื่อ</span>
+                <input name="name" required maxlength="28" placeholder="เช่น มิน">
+              </label>
+              <label>
+                <span>บทบาท</span>
+                <input name="role" required maxlength="80" placeholder="เช่น เพื่อนสนิท / นักเขียน / รุ่นพี่">
+              </label>
+              <label>
+                <span>Emoji fallback</span>
+                <input name="emoji" maxlength="4" placeholder="M">
+              </label>
+              <label>
+                <span>สีประจำตัว</span>
+                <input name="color" type="color" value="#ff4bb8">
+              </label>
+            </div>
+
+            <label>
+              <span>URL รูปภาพ</span>
+              <input name="img" type="url" placeholder="https://...">
+            </label>
+            <label>
+              <span>แท็ก</span>
+              <input name="tags" placeholder="น่ารัก, เย็นชา, แฟนตาซี">
+            </label>
+            <label>
+              <span>คำอธิบาย</span>
+              <textarea name="desc" required rows="3" maxlength="240" placeholder="บุคลิกและเรื่องย่อของตัวละคร"></textarea>
+            </label>
+            <label>
+              <span>ข้อความทักทาย</span>
+              <textarea name="greet" rows="2" maxlength="180" placeholder="สวัสดี มีอะไรอยากคุยกับเราหรอ"></textarea>
+            </label>
+            <label>
+              <span>System prompt</span>
+              <textarea name="system" rows="4" placeholder="กำหนดบุคลิก วิธีพูด และข้อควรจำของบอท"></textarea>
+            </label>
+
+            <button class="start-btn" type="submit">บันทึกตัวละคร</button>
+          </form>
+
+          <aside class="creator-guide">
+            <h3>Custom Bot</h3>
+            <p>หลังบันทึก ระบบจะพาไปหน้า Explore และติดป้าย Custom บนการ์ด พร้อมปุ่มลบบอทที่สร้างเอง</p>
+            <div class="guide-card">
+              <span>เก็บใน</span>
+              <strong>localStorage</strong>
+              <small>key: meowide-custom-bots</small>
+            </div>
+          </aside>
         </div>
       </section>
 

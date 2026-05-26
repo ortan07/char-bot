@@ -361,6 +361,30 @@ textarea::placeholder {
   animation: cardIn 0.52s ease both, cardIdle 4.8s ease-in-out infinite;
   animation-delay: calc(var(--card-i, 0) * 48ms), calc(var(--card-i, 0) * -380ms);
   transform-style: preserve-3d;
+  position: relative;
+}
+
+.delete-bot {
+  position: absolute;
+  z-index: 4;
+  top: 10px;
+  left: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(14px);
+  font: 700 18px var(--mono);
+  display: grid;
+  place-items: center;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.delete-bot:hover {
+  transform: scale(1.07);
+  background: rgba(255, 59, 92, 0.72);
 }
 
 .bot-card-button {
@@ -442,6 +466,19 @@ textarea::placeholder {
   border-radius: 999px;
   color: var(--text);
   background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(12px);
+  padding: 5px 9px;
+  font: 700 11px var(--mono);
+}
+
+.custom-pill {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 999px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 36%, rgba(0, 0, 0, 0.48));
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, white 12%);
   backdrop-filter: blur(12px);
   padding: 5px 9px;
   font: 700 11px var(--mono);
@@ -542,7 +579,7 @@ textarea::placeholder {
   border-radius: 20px;
   padding: 24px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 420px);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
   gap: 20px;
 }
 
@@ -551,14 +588,88 @@ textarea::placeholder {
   font-size: 26px;
 }
 
-.creator-panel pre {
-  margin: 0;
-  overflow: auto;
-  border-radius: 14px;
+.creator-form,
+.creator-guide {
+  min-width: 0;
+}
+
+.form-head p,
+.creator-guide p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.creator-form {
+  display: grid;
+  gap: 14px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.creator-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.creator-form label span {
+  color: var(--muted);
+  font: 700 12px var(--mono);
+}
+
+.creator-form input,
+.creator-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 15px;
+  outline: 0;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 12px 13px;
+  resize: vertical;
+}
+
+.creator-form input[type="color"] {
+  min-height: 44px;
+  padding: 5px;
+}
+
+.creator-form input:focus,
+.creator-form textarea:focus {
+  border-color: color-mix(in srgb, var(--accent) 58%, white 10%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.creator-guide {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
   padding: 18px;
-  color: #c9eeff;
-  background: rgba(0, 0, 0, 0.34);
-  font-family: var(--mono);
+  background:
+    radial-gradient(circle at 50% 0%, var(--accent-soft), transparent 55%),
+    rgba(255, 255, 255, 0.055);
+}
+
+.guide-card {
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.22);
+  padding: 16px;
+  display: grid;
+  gap: 4px;
+}
+
+.guide-card span,
+.guide-card small {
+  color: var(--muted);
+  font: 700 11px var(--mono);
+}
+
+.guide-card strong {
+  font: 700 22px var(--mono);
 }
 
 .profile-grid {
@@ -1171,6 +1282,10 @@ textarea::placeholder {
 
   .modal-box,
   .creator-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
     grid-template-columns: 1fr;
   }
 
