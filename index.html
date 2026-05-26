@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>meowide | Character Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+
+  <main class="app-shell active" id="appShell">
+    <aside class="app-sidebar">
+      <a class="brand" href="#" aria-label="meowide home">
+        <span class="brand-mark">M</span>
+        <span>
+          <strong>MEOWIDE</strong>
+          <small>AI Character Chat</small>
+        </span>
+      </a>
+
+      <nav class="side-nav" aria-label="Main navigation">
+        <button class="nav-btn active" type="button" data-view="explore"><span>⌂</span>Explore</button>
+        <button class="nav-btn" type="button" data-view="chats"><span>✦</span>Chats</button>
+        <button class="nav-btn" type="button" data-view="create"><span>＋</span>Create</button>
+        <button class="nav-btn" type="button" data-view="profile"><span>◎</span>Profile</button>
+      </nav>
+
+      <section class="recent-panel">
+        <h2>Recent chats</h2>
+        <div class="recent-list" id="recentChats"></div>
+      </section>
+    </aside>
+
+    <section class="main-area">
+      <section class="view-panel active" id="view-explore">
+        <header class="page-header">
+          <p>SillyTavern Character Hub</p>
+          <h1>MEOWIDE</h1>
+          <span>เลือกตัวละคร แล้วเริ่มคุยในสไตล์ของแต่ละบอท</span>
+        </header>
+
+        <div class="toolbar">
+          <label class="search-box">
+            <span>ค้นหา</span>
+            <input id="searchInput" type="search" placeholder="ชื่อ บทบาท หรือแท็ก...">
+          </label>
+          <div class="chip-row mode-tabs" id="modeTabs"></div>
+        </div>
+
+        <div class="chip-row tag-filters" id="tagFilters"></div>
+        <div class="bot-grid" id="botGrid" aria-live="polite"></div>
+      </section>
+
+      <section class="view-panel" id="view-chats">
+        <header class="section-head">
+          <p>Threads</p>
+          <h2>Chats</h2>
+        </header>
+        <div class="thread-list" id="chatThreads"></div>
+      </section>
+
+      <section class="view-panel" id="view-create">
+        <header class="section-head">
+          <p>Studio</p>
+          <h2>Create Character</h2>
+        </header>
+        <div class="creator-panel">
+          <div>
+            <h3>สร้างตัวละครใหม่</h3>
+            <p>เพิ่มข้อมูลใน <code>bots.js</code> ด้วยโครงสร้างเดิม แล้วระบบจะดึงแท็กและการ์ดขึ้นมาอัตโนมัติ</p>
+          </div>
+          <pre>{
+  id, name, role, color, colorSoft,
+  hasImg, img, emoji,
+  tags, desc, likes, dislikes,
+  msgs, greet, system
+}</pre>
+        </div>
+      </section>
+
+      <section class="view-panel" id="view-profile">
+        <header class="section-head">
+          <p>Local profile</p>
+          <h2>Profile</h2>
+        </header>
+        <div class="profile-grid" id="profileStats"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal" id="botModal" aria-hidden="true">
+    <div class="modal-box" id="modalBox" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <section class="page chat-page" id="pageChat">
+    <div class="chat-ambient" aria-hidden="true"></div>
+    <header class="chat-topbar">
+      <button class="icon-btn" type="button" id="backBtn" aria-label="กลับ">‹</button>
+      <div class="chat-avatar" id="chatAvatar"></div>
+      <div class="chat-heading">
+        <h2 id="chatTitle">Character</h2>
+        <p><span class="live-dot"></span><span id="chatRole">Role</span></p>
+      </div>
+      <div class="chat-actions" aria-label="Chat tools">
+        <button class="icon-btn" type="button" aria-label="ค้นหา">⌕</button>
+        <button class="icon-btn" type="button" aria-label="ตั้งค่า">⚙</button>
+      </div>
+    </header>
+
+    <main class="chat-main">
+      <section class="chat-panel">
+        <div class="messages" id="messages"></div>
+        <form class="chat-input" id="chatForm">
+          <input id="chatInput" type="text" autocomplete="off" placeholder="พิมพ์ข้อความ...">
+          <button type="submit">ส่ง</button>
+        </form>
+      </section>
+
+      <aside class="chat-info">
+        <div class="side-avatar" id="sideAvatar"></div>
+        <h3 id="sideName">Character</h3>
+        <p id="sideRole">Role</p>
+        <div class="tag-row" id="sideTags"></div>
+        <p class="bio" id="chatBio"></p>
+        <form class="comment-form" id="commentForm">
+          <textarea id="commentInput" rows="3" placeholder="เขียนคอมเมนต์ส่วนตัว..."></textarea>
+          <button type="submit">บันทึก</button>
+        </form>
+        <div class="comment-list" id="commentList"></div>
+      </aside>
+    </main>
+  </section>
+
+  <script src="bots.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
